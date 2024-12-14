@@ -1,0 +1,36 @@
+{
+    "type": "record",
+    "name": "missingProduct",
+    "fields": [
+        {
+            "name": "dish",
+            "type": "string"
+        },
+        {
+            "name": "requiredIngredient",
+            "type": {
+                "type": "record",
+                "name": "Ingredient",
+                "fields": [
+                    {
+                        "name": "item",
+                        "type": "string"
+                    },
+                    {
+                        "name": "amount",
+                        "type": "int"
+                    },
+                    {
+                        "name": "createdAt",
+                        "type": "string"
+                    },
+                    {
+                        "name": "updatedAt",
+                        "type": ["null", "string"],
+                        "default": null
+                    }
+                ]
+            }
+        }
+    ]
+}
