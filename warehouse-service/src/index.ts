@@ -1,40 +1,39 @@
-import express from "express";
-import { Kafka } from "kafkajs";
-import {
-    missingProduct as missingProductType,
-    type MissingProductType,
-} from "./schemas/missingProduct";
+import { consumer } from "./kafka";
+import { missingProduct } from "./schemas/missingProduct";
+import { handleRequestProduct } from "./handler";
 
-const app = express();
+await consumer.connect().then(() =>
+    consumer.subscribe({
+        topics: ["warehouse"],
+        fromBeginning: true,
+    })
+);
 
-const kafka = new Kafka({
-    clientId: "kitchen-app",
-    brokers: ["kafka:9092"],
+await consumer.run({
+    eachMessage: async ({ message }) => {
+        const { key, value } = message;
+
+        if (!key || !value) {
+            return;
+        }
+
+        const [dish, ingredient] = key.toString().split(":");
+        const product = missingProduct.fromBuffer(value);
+
+        handleRequestProduct({
+            dish,
+            ingredient,
+            product,
+        });
+    },
 });
 
-const consumer = kafka.consumer({ groupId: "kitchen-app-group" });
+process.on("SIGINT", async () => {
+    console.log("Disconnecting...");
 
-async function consumeEvents() {
-    await consumer.connect();
-    await consumer.subscribe({ topic: "warehouse", fromBeginning: true });
-
-    await consumer.run({
-        eachMessage: async ({ message }) => {
-            try {
-                const missingProduct: MissingProductType =
-                    missingProductType.fromBuffer(message.value ?? "{}");
-                console.log("retrieved missing product", missingProduct);
-            } catch (err) {
-                console.error(err);
-            }
-        },
+    await consumer.disconnect().catch((err) => {
+        console.error("Unable to disconnect our kafka consumer!", err);
     });
-}
 
-app.listen(4444, () => {
-    console.log("Server is listening at port 4444");
-
-    consumeEvents().catch((err) => {
-        console.error("Unable to consume events!", err);
-    });
+    process.exit(0);
 });

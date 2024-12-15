@@ -44,9 +44,11 @@ router.post("/order", async (req: Request, res: Response) => {
         })
     );
 
-    await Promise.all(eventsPromises).catch((err) => {
+    const results = await Promise.all(eventsPromises).catch((err) => {
         res.status(500).json({ error: "Unable to send messages", err });
     });
+
+    console.log({ results });
 
     // TODO: See warehouse database changes so we can respond here.
     res.status(200).json({ ok: true });
