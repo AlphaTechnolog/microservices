@@ -1,9 +1,18 @@
 import BaseService from "./base";
+import type { MissingProductType } from "../schemas/missingProduct";
+
 import type {
   Ingredient,
   PreparedFood,
   PreparedFoodIngredient,
 } from "./types.d";
+
+import { convertToSnakeCase as snakeCase } from "../utils";
+
+type MissingProducts4Dish = {
+  key: string;
+  value: MissingProductType;
+}[];
 
 export class RecipeService extends BaseService {
   getPreparedFoods() {
@@ -54,5 +63,67 @@ export class RecipeService extends BaseService {
       );
       return availableVersion && availableVersion.amount - required_amount >= 0;
     });
+  }
+
+  /// Gets all the missing products (if any) of a given prepared food (by id).
+  ///
+  /// NOTE: Returns [] if none.
+  // preparedFoodMissingProducts({
+  //   preparedFood,
+  //   ingredients,
+  //   availableIngredients,
+  // }: {
+  //   preparedFood: PreparedFood;
+  //   ingredients: PreparedFoodIngredient[];
+  //   availableIngredients: Ingredient[];
+  // }): MissingProducts4Dish {
+  preparedFoodMissingProducts(id: number): MissingProducts4Dish {
+    const preparedFood = this.getPreparedFood(id);
+    const ingredients = this.getIngredientsForFood(id);
+    const availableIngredients = this.getAvailableIngredients();
+    const missingProducts: MissingProducts4Dish = [];
+
+    if (!preparedFood) {
+      return [];
+    }
+
+    for (const item of ingredients) {
+      const { ingredient, required_amount } = item;
+
+      const availableVersion = availableIngredients.find(
+        (x) => x.name === ingredient
+      );
+
+      const availableAmount = availableVersion?.amount ?? 0;
+      const finalProductAmount = availableAmount - required_amount;
+
+      console.log({
+        ingredient,
+        finalProductAmount,
+        required_amount,
+        availableAmount,
+      });
+
+      const isAvailable = finalProductAmount >= 0;
+
+      if (isAvailable) {
+        continue;
+      }
+
+      missingProducts.push({
+        key: `${snakeCase(preparedFood.name)}:${snakeCase(ingredient)}`,
+        value: {
+          dish: preparedFood.name,
+          requiredIngredient: {
+            item: ingredient,
+            amount: Math.abs(finalProductAmount),
+            createdAt: new Date().toISOString(), // TODO: Implement timestamps
+            updatedAt: null,
+          },
+        },
+      });
+    }
+
+    return missingProducts;
   }
 }
