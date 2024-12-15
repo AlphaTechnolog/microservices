@@ -10,12 +10,12 @@ CREATE TABLE IF NOT EXISTS prepared_foods (
 );
 
 CREATE TABLE IF NOT EXISTS prepared_food_ingredients (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_prepared_food INTEGER NOT NULL,
     id_ingredient INTEGER NOT NULL,
     required_amount REAL NOT NULL,
     FOREIGN KEY (id_prepared_food) REFERENCES prepared_foods(id),
-    FOREIGN KEY (id_ingredient) REFERENCES ingredients(id),
-    PRIMARY KEY (id_prepared_food, id_ingredient)
+    FOREIGN KEY (id_ingredient) REFERENCES ingredients(id)
 );
 
 CREATE INDEX idx_prepared_food_ingredients_prepared_food ON prepared_food_ingredients(id_prepared_food);

@@ -1,2 +1,2 @@
 export const convertToSnakeCase = (text: string): string =>
-  text.toLowerCase().replaceAll(" ", "_");
+    text.toLowerCase().replaceAll(" ", "_");

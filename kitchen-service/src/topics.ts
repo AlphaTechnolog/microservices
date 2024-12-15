@@ -1,3 +1,3 @@
 export const TOPICS = {
-  Warehouse: 'warehouse',
+    Warehouse: "warehouse",
 } as const;

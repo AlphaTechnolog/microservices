@@ -14,6 +14,7 @@
 	}
 ],
   "settings": {
-    "npm.packageManager": "bun"
+    "npm.packageManager": "bun",
+	"prettier.tabWidth": 4
   }
 }
