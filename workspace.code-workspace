@@ -1,0 +1,19 @@
+{
+  "folders": [
+	{
+		"path": "kitchen-frontend"
+	},
+	{
+		"path": "kitchen-service"
+	},
+	{
+		"path": "market-service"
+	},
+	{
+		"path": "warehouse-service"
+	}
+],
+  "settings": {
+    "npm.packageManager": "bun"
+  }
+}
