@@ -12,7 +12,7 @@ export const kafka = new Kafka({
     brokers,
 });
 
-export const producer = kafka.producer();
+export const producer = kafka.producer({ idempotent: true });
 
 /// Creates the required kafka topics if not present already.
 export const createKafkaTopics = async () => {
@@ -30,4 +30,6 @@ export const createKafkaTopics = async () => {
             ],
         });
     }
+
+    await admin.disconnect();
 };

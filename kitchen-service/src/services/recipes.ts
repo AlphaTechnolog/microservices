@@ -7,8 +7,6 @@ import type {
     PreparedFoodIngredient,
 } from "./types.d";
 
-import { convertToSnakeCase as snakeCase } from "../utils";
-
 type MissingProducts4Dish = MissingProductType[];
 
 export class RecipeService {
