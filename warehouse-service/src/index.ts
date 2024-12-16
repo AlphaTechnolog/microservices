@@ -2,12 +2,12 @@ import { consumer } from "./kafka";
 import { missingProduct } from "./schemas/missingProduct";
 import { handleRequestProduct } from "./handler";
 
-await consumer.connect().then(() =>
-    consumer.subscribe({
-        topics: ["warehouse"],
-        fromBeginning: true,
-    })
-);
+await consumer.connect();
+
+await consumer.subscribe({
+    topics: ["warehouse"],
+    fromBeginning: true,
+});
 
 await consumer.run({
     eachMessage: async ({ message }) => {
@@ -20,7 +20,7 @@ await consumer.run({
         const [dish, ingredient] = key.toString().split(":");
         const product = missingProduct.fromBuffer(value);
 
-        handleRequestProduct({
+        await handleRequestProduct({
             dish,
             ingredient,
             product,

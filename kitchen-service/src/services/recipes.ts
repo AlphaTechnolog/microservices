@@ -25,7 +25,7 @@ export class RecipeService {
     private getAvailableIngredients() {
         {
             using database = RecipeService.openConnection();
-            using query = database.query("SELECT * FROM ingredients");
+            using query = database.query("SELECT name, SUM(amount) AS amount FROM ingredients GROUP BY name;");
             return query.all() as Ingredient[];
         }
     }
@@ -100,5 +100,26 @@ export class RecipeService {
         }
 
         return missingProducts;
+    }
+
+    public discountFromKitchen(dishId: number) {
+        const dishIngredients = this.getIngredientsForFood(dishId);
+
+        let i = 0;
+
+        let baseSQL = `--sql
+            INSERT INTO ingredients (name, amount) VALUES
+        `;
+
+        for (const _ of dishIngredients) {
+            const isLast = i++ === dishIngredients.length - 1;
+            baseSQL += `(?, ?)${isLast ? ';' : ',\n'}`;
+        }
+
+        {
+            using database = RecipeService.openConnection();
+            using query = database.prepare(baseSQL);
+            query.run(...dishIngredients.flatMap(x => ([x.ingredient, -x.required_amount])));
+        }
     }
 }

@@ -1,6 +1,6 @@
 INSERT INTO ingredients (name, amount) VALUES
-('Lechuga', 4),
-('Pollo', 2);
+('lechuga', 4),
+('pollo', 2);
 
 INSERT INTO prepared_foods (name) VALUES ('Ensalada Cesar');
 

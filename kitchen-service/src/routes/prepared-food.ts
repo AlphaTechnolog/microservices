@@ -26,6 +26,7 @@ router.post("/order", async (req: Request, res: Response) => {
 
     if (missingProducts.length === 0) {
         const dish = recipeService.getPreparedFood(preparedFoodId);
+        recipeService.discountFromKitchen(preparedFoodId);
         res.status(200).json({ preparedFood: dish });
         return;
     }
@@ -48,7 +49,7 @@ router.post("/order", async (req: Request, res: Response) => {
         res.status(500).json({ error: "Unable to send messages", err });
     });
 
-    console.log({ results });
+    console.log({ results, messages });
 
     // TODO: See warehouse database changes so we can respond here.
     res.status(200).json({ ok: true });
