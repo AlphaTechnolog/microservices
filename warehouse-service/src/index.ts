@@ -1,8 +1,16 @@
-import { consumer } from "./kafka";
+import { consumer, producer, createKafkaTopics } from "./kafka";
 import { missingProduct } from "./schemas/missingProduct";
 import { handleRequestProduct } from "./handler";
 
-await consumer.connect();
+const initialization = () =>
+    createKafkaTopics()
+        .then(() => consumer.connect())
+        .then(() => producer.connect());
+
+await initialization().catch((err) => {
+    console.error("Unable to initialize listener!", err);
+    throw err;
+});
 
 await consumer.subscribe({
     topics: ["warehouse"],
@@ -31,9 +39,15 @@ await consumer.run({
 process.on("SIGINT", async () => {
     console.log("Disconnecting...");
 
-    await consumer.disconnect().catch((err) => {
-        console.error("Unable to disconnect our kafka consumer!", err);
-    });
+    await consumer
+        .disconnect()
+        .then(() => producer.disconnect())
+        .catch((err) => {
+            console.error(
+                "Unable to disconnect our kafka consumer & producer!",
+                err
+            );
+        });
 
     process.exit(0);
 });

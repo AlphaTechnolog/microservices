@@ -1,8 +1,5 @@
 import { Kafka } from "kafkajs";
-
-export const TOPICS = {
-    Warehouse: "warehouse",
-} as const;
+import { TOPICS } from "./topics";
 
 export const clientId = "kitchen-app";
 export const brokers = ["kafka:9092"];
@@ -21,13 +18,11 @@ export const createKafkaTopics = async () => {
 
     if (!topics.includes(TOPICS.Warehouse)) {
         await admin.createTopics({
-            topics: [
-                {
-                    topic: TOPICS.Warehouse,
-                    numPartitions: 1,
-                    replicationFactor: 1,
-                },
-            ],
+            topics: Object.values(TOPICS).map((x) => ({
+                topic: x,
+                numPartitions: 1,
+                replicationFactor: 1,
+            })),
         });
     }
 

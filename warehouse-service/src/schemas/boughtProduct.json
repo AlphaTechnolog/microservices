@@ -1,0 +1,14 @@
+{
+    "type": "record",
+    "name": "boughtProduct",
+    "fields": [
+        {
+            "name": "name",
+            "type": "string"
+        },
+        {
+            "name": "amount",
+            "type": "int"
+        }
+    ]
+}
