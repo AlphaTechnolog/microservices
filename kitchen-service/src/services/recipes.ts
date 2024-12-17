@@ -39,6 +39,15 @@ export class RecipeService {
         }
     }
 
+    public getPreparedFoodFromKey(key: string) {
+        const sql = `SELECT * FROM prepared_foods WHERE key = ? LIMIT 1`;
+        {
+            using database = RecipeService.openConnection();
+            using query = database.query(sql);
+            return query.get(key) as PreparedFood | null;
+        }
+    }
+
     private getIngredientsForFood(preparedFoodId: number) {
         const sql = `--sql
             SELECT
@@ -89,7 +98,7 @@ export class RecipeService {
             }
 
             missingProducts.push({
-                dish: preparedFood.name,
+                dishKey: preparedFood.key,
                 requiredIngredient: {
                     item: ingredient,
                     amount: finalProductAmount * -1,
@@ -100,6 +109,15 @@ export class RecipeService {
         }
 
         return missingProducts;
+    }
+
+    public addIngredientToKitchen(ingredient: Ingredient) {
+        const sql = "INSERT INTO ingredients (name, amount) VALUES (?, ?)";
+        {
+            using database = RecipeService.openConnection();
+            using query = database.prepare(sql);
+            query.run(ingredient.name, ingredient.amount);
+        }
     }
 
     public discountFromKitchen(dishId: number) {

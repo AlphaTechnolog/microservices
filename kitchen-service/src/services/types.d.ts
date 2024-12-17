@@ -1,5 +1,6 @@
 export interface PreparedFood {
     id: number;
+    key: string;
     name: string;
 }
 

@@ -12,7 +12,7 @@ export interface Ingredient {
 }
 
 export interface MissingProductType {
-	dish: string;
+	dishKey: string;
 	requiredIngredient: Ingredient;
 }
 

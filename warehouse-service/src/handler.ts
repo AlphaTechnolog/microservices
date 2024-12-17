@@ -7,6 +7,7 @@ import type { Product } from "./services/types.d";
 import type { MissingProductType, Ingredient } from "./schemas/missingProduct";
 
 import { boughtProductType } from "./schemas/boughtProduct";
+import { assert } from "./utils";
 
 const marketService = new MarketService();
 const productService = new ProductService();
@@ -102,14 +103,6 @@ type RequestPayload = {
     ingredient: string;
     product: MissingProductType;
 };
-
-class AssertionError extends Error {}
-
-function assert(assertion: boolean, msg?: string): asserts assertion {
-    if (!assertion) {
-        throw new AssertionError(msg ?? "Assertion not met, got false");
-    }
-}
 
 export const handleRequestProduct = async ({
     dish,

@@ -11,6 +11,11 @@ export const kafka = new Kafka({
 
 export const producer = kafka.producer({ idempotent: true });
 
+export const kitchenConsumer = kafka.consumer({
+    groupId:
+        "kitchen-app-group-" + (Math.random() + 1).toString(36).substring(1),
+});
+
 /// Creates the required kafka topics if not present already.
 export const createKafkaTopics = async () => {
     const admin = kafka.admin();

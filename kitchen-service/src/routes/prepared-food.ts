@@ -1,25 +1,108 @@
 import { Router, type Request, type Response } from "express";
+import { v4 as uuidv4 } from "uuid";
+
 import { RecipeService } from "../services/recipes";
+import { producer, kitchenConsumer } from "../kafka";
+import { TOPICS } from "../topics";
+import { assert, convertToSnakeCase as snakeCase } from "../utils";
+import { Signalis } from "../signalis";
 
-import { producer } from "../kafka";
-
-import { convertToSnakeCase as snakeCase } from "../utils";
+import { missingProduct as missingProductType } from "../schemas/missingProduct";
 
 import {
-    missingProduct as missingProductType,
-    type MissingProductType,
-} from "../schemas/missingProduct";
+    boughtProductType,
+    type BoughtProduct,
+} from "../schemas/boughtProduct";
 
 export const router = Router();
 
 const recipeService = new RecipeService();
+const signal = new Signalis();
 
 router.get("/", (_req: Request, res: Response) => {
     res.status(200).json({ preparedFoods: recipeService.getPreparedFoods() });
 });
 
+type SignalisKitchenNotifPayload = {
+    requestId: string;
+    product: BoughtProduct;
+    dishKey: string;
+};
+
+type EventWaitlistElement = {
+    requestId: string;
+    eventKey: string;
+};
+
+// this array will store the keys of the expected events to wait for, the kitchenConsumer.run's eachMessage callback
+// will have to read this array in order to wait for all of them before sending the kitchen-notification, so we get
+// a synchronized database with the warehouse one. The structure for this will be { requestId: "<uuid>", eventKey: "<key>" }
+// note that we do need to keep an uuid which will represent the id of the request, so this way if we have multiple events
+// on this array, we can know and send the id of the request when processing them so we don't get lost and process multiple
+// times a single event when dealing with multiple requests at the same time.
+let eventsWaitlist: EventWaitlistElement[] = [];
+
+// This will store a transaction history of the events captured by the eachMessage handler, these will be passed across a
+// signalis's event called "kitchen-notif:with-product" when the waitlist of keys (`eventsWaitlist`) is empty.
+let eventsTransactions: SignalisKitchenNotifPayload[] = [];
+
+// waiting for events from the warehouse micro
+await kitchenConsumer.run({
+    eachMessage: async ({ message }) => {
+        const { key, value } = message;
+
+        if (!key || !value) {
+            return;
+        }
+
+        // lets check if obtained event that comes from kafka is inside the waitlist.
+        const keystr = key.toString() ?? "<undefined>";
+        const keyInWaitlist = eventsWaitlist.find((x) => x.eventKey === keystr);
+
+        if (!keyInWaitlist) {
+            return console.error(
+                "INFO: Skipping event of key",
+                keystr,
+                "because it's not listed on waitlist",
+                eventsWaitlist
+            );
+        }
+
+        const waitlistKeyIndex = eventsWaitlist.indexOf(keyInWaitlist);
+
+        assert(
+            waitlistKeyIndex > -1,
+            "keyInWaitlist should already have been found before??"
+        );
+
+        // remove the item of the waitlist if we find it by using as key the one the event gives us.
+        eventsWaitlist.splice(waitlistKeyIndex, 1);
+
+        const [dishKey, _] = key.toString().split(":");
+        const product = boughtProductType.fromBuffer(value);
+
+        const signalisPayload: SignalisKitchenNotifPayload = {
+            requestId: keyInWaitlist.requestId,
+            dishKey,
+            product,
+        };
+
+        eventsTransactions.push(signalisPayload);
+
+        if (eventsWaitlist.length === 0) {
+            signal.emit<SignalisKitchenNotifPayload[]>(
+                "kitchen-notif:with-product",
+                eventsTransactions
+            );
+            eventsTransactions = [];
+            return;
+        }
+    },
+});
+
 router.post("/order", async (req: Request, res: Response) => {
     const { preparedFoodId }: { preparedFoodId: number } = req.body;
+    const requestId = uuidv4();
 
     const missingProducts =
         recipeService.preparedFoodMissingProducts(preparedFoodId);
@@ -32,25 +115,58 @@ router.post("/order", async (req: Request, res: Response) => {
     }
 
     const messages = missingProducts.map((x) => ({
-        key: `${snakeCase(x.dish)}:${snakeCase(x.requiredIngredient.item)}`,
+        key: `${x.dishKey}:${snakeCase(x.requiredIngredient.item)}`,
         value: missingProductType.toBuffer(x),
     }));
 
-    await producer.connect();
-
     const eventsPromises = messages.map((value) =>
         producer.send({
-            topic: "warehouse",
+            topic: TOPICS.Warehouse,
             messages: [value],
         })
     );
 
-    const results = await Promise.all(eventsPromises).catch((err) => {
+    // append these keys to the waitlist so the kafka consumer will know which events
+    // it should wait for before letting us complete the request.
+    eventsWaitlist = [
+        ...eventsWaitlist,
+        ...messages.map((x) => ({
+            requestId,
+            eventKey: x.key,
+        })),
+    ];
+
+    await Promise.all(eventsPromises).catch((err) => {
         res.status(500).json({ error: "Unable to send messages", err });
     });
 
-    console.log({ results, messages });
+    const eventsToProcess = await signal.waitFor<SignalisKitchenNotifPayload[]>(
+        "kitchen-notif:with-product"
+    );
 
-    // TODO: See warehouse database changes so we can respond here.
-    res.status(200).json({ ok: true });
+    console.log("Processing", eventsToProcess.length, "events!");
+
+    for (const event of eventsToProcess) {
+        // not the event of our request!
+        if (event.requestId !== requestId) continue;
+
+        const { dishKey, product } = event;
+        const dish = recipeService.getPreparedFoodFromKey(dishKey);
+
+        if (!dish) {
+            res.status(500).json({
+                error: "Cannot retrieve dish from invalid key: " + dishKey,
+            });
+
+            throw new Error("Invalid dishKey: " + String(dishKey));
+        }
+
+        recipeService.addIngredientToKitchen(product);
+    }
+
+    recipeService.discountFromKitchen(preparedFoodId);
+
+    res.status(200).json({
+        preparedFood: recipeService.getPreparedFood(preparedFoodId),
+    });
 });

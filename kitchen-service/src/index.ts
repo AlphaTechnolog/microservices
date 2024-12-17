@@ -1,16 +1,28 @@
 import express from "express";
-import { router as preparedFoodRouter } from "./routes/prepared-food";
-import { createKafkaTopics } from "./kafka";
+import { TOPICS } from "./topics";
+import {
+    kitchenConsumer as consumer,
+    producer,
+    createKafkaTopics,
+} from "./kafka";
+
+await createKafkaTopics()
+    .then(() => producer.connect())
+    .then(() => consumer.connect());
+
+await consumer.subscribe({
+    topics: [TOPICS.Kitchen],
+    fromBeginning: true,
+});
 
 const app = express();
 
 app.use(express.json({}));
-app.use("/prepared-food", preparedFoodRouter);
+
+// importing routes this way so if they setup a new listener for events, they will get
+// configured now instead of before kafka has been initialized.
+app.use("/prepared-food", (await import("./routes/prepared-food")).router);
 
 app.listen(8000, () => {
     console.log("Server is listening at port 8000");
-
-    createKafkaTopics().catch((err) => {
-        console.error("Unable to create the required topics via kafka", err);
-    });
 });

@@ -3,7 +3,7 @@
     "name": "missingProduct",
     "fields": [
         {
-            "name": "dish",
+            "name": "dishKey",
             "type": "string"
         },
         {

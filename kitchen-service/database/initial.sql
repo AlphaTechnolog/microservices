@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS ingredients (
 
 CREATE TABLE IF NOT EXISTS prepared_foods (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key TEXT NOT NULL,
     name TEXT NOT NULL
 );
 

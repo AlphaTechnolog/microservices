@@ -2,7 +2,7 @@ INSERT INTO ingredients (name, amount) VALUES
 ('lechuga', 4),
 ('pollo', 2);
 
-INSERT INTO prepared_foods (name) VALUES ('Ensalada Cesar');
+INSERT INTO prepared_foods (key, name) VALUES ('ensalada_cesar', 'Ensalada Cesar');
 
 INSERT INTO prepared_food_ingredients (id_prepared_food, id_ingredient, required_amount) VALUES
 (1, 1, 5),
