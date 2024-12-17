@@ -9,10 +9,7 @@ import { Signalis } from "../signalis";
 
 import { missingProduct as missingProductType } from "../schemas/missingProduct";
 
-import {
-    boughtProductType,
-    type BoughtProduct,
-} from "../schemas/boughtProduct";
+import { boughtProductType, type BoughtProduct } from "../schemas/boughtProduct";
 
 export const router = Router();
 
@@ -70,10 +67,7 @@ await kitchenConsumer.run({
 
         const waitlistKeyIndex = eventsWaitlist.indexOf(keyInWaitlist);
 
-        assert(
-            waitlistKeyIndex > -1,
-            "keyInWaitlist should already have been found before??"
-        );
+        assert(waitlistKeyIndex > -1, "keyInWaitlist should already have been found before??");
 
         // remove the item of the waitlist if we find it by using as key the one the event gives us.
         eventsWaitlist.splice(waitlistKeyIndex, 1);
@@ -90,10 +84,7 @@ await kitchenConsumer.run({
         eventsTransactions.push(signalisPayload);
 
         if (eventsWaitlist.length === 0) {
-            signal.emit<SignalisKitchenNotifPayload[]>(
-                "kitchen-notif:with-product",
-                eventsTransactions
-            );
+            signal.emit<SignalisKitchenNotifPayload[]>("kitchen-notif:with-product", eventsTransactions);
             eventsTransactions = [];
             return;
         }
@@ -104,8 +95,7 @@ router.post("/order", async (req: Request, res: Response) => {
     const { preparedFoodId }: { preparedFoodId: number } = req.body;
     const requestId = uuidv4();
 
-    const missingProducts =
-        recipeService.preparedFoodMissingProducts(preparedFoodId);
+    const missingProducts = recipeService.preparedFoodMissingProducts(preparedFoodId);
 
     if (missingProducts.length === 0) {
         const dish = recipeService.getPreparedFood(preparedFoodId);
@@ -140,18 +130,17 @@ router.post("/order", async (req: Request, res: Response) => {
         res.status(500).json({ error: "Unable to send messages", err });
     });
 
-    const eventsToProcess = await signal.waitFor<SignalisKitchenNotifPayload[]>(
-        "kitchen-notif:with-product"
-    );
+    const NOTIF_ID = "kitchen-notif:with-product";
+    const notifs = await signal.waitFor<SignalisKitchenNotifPayload[]>(NOTIF_ID);
+    const eventsToProcess = notifs.filter((x) => x.requestId === requestId);
 
-    console.log("Processing", eventsToProcess.length, "events!");
+    console.log("INFO: Processing", eventsToProcess.length, "events");
 
     for (const event of eventsToProcess) {
-        // not the event of our request!
-        if (event.requestId !== requestId) continue;
-
         const { dishKey, product } = event;
         const dish = recipeService.getPreparedFoodFromKey(dishKey);
+
+        console.log({ event });
 
         if (!dish) {
             res.status(500).json({

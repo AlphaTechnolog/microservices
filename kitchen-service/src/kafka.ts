@@ -1,4 +1,5 @@
 import { Kafka } from "kafkajs";
+import { v4 as uuidv4 } from "uuid";
 import { TOPICS } from "./topics";
 
 export const clientId = "kitchen-app";
@@ -12,8 +13,7 @@ export const kafka = new Kafka({
 export const producer = kafka.producer({ idempotent: true });
 
 export const kitchenConsumer = kafka.consumer({
-    groupId:
-        "kitchen-app-group-" + (Math.random() + 1).toString(36).substring(1),
+    groupId: "kitchen-app-group-" + uuidv4(),
 });
 
 /// Creates the required kafka topics if not present already.
