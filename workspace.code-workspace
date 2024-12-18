@@ -1,15 +1,23 @@
 {
     "folders": [
         {
+            "name": "kitchen-frontend",
             "path": "kitchen-frontend"
         },
         {
+            "name": "kitchen-history-notifier",
+            "path": "kitchen-history-notifier"
+        },
+        {
+            "name": "kitchen-service",
             "path": "kitchen-service"
         },
         {
+            "name": "market-service",
             "path": "market-service"
         },
         {
+            "name": "warehouse-service",
             "path": "warehouse-service"
         }
     ],

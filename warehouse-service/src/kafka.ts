@@ -19,9 +19,11 @@ export const createKafkaTopics = async () => {
     const admin = kafka.admin();
     const topics = await admin.listTopics();
 
-    if (!topics.includes(TOPICS.Warehouse)) {
+    const missingTopics = Object.values(TOPICS).filter(x => !topics.includes(x));
+
+    if (missingTopics.length > 0) {
         await admin.createTopics({
-            topics: Object.values(TOPICS).map((x) => ({
+            topics: missingTopics.map(x => ({
                 topic: x,
                 numPartitions: 1,
                 replicationFactor: 1,
@@ -30,4 +32,4 @@ export const createKafkaTopics = async () => {
     }
 
     await admin.disconnect();
-};
+}

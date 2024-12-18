@@ -1,4 +1,8 @@
 import { Database } from 'bun:sqlite';
+import { producer } from "../kafka";
+import { TOPICS } from "../topics";
+
+import { kitchenNotificationType, type KitchenNotification } from "../schemas/kitchenNotification"
 import type { MissingProductType } from "../schemas/missingProduct";
 
 import type {
@@ -137,8 +141,26 @@ export class IngredientsService {
             using query = database.prepare(sql);
             query.run(ingredient.name, ingredient.amount);
         }
+
+        console.log("INFO: Sending to kafka as inventory modification notification an event with payload", {
+            ingredient
+        });
+
+        producer.send({
+            topic: TOPICS.KitchenInventoryNotifications,
+            messages: [
+                {
+                    key: `${ingredient.name}:${ingredient.amount}`,
+                    value: kitchenNotificationType.toBuffer({
+                        name: ingredient.name,
+                        amount: ingredient.amount,
+                    } as KitchenNotification),
+                },
+            ],
+        });
     }
 
+    // TODO: Send kafka notifications about these modifications on the history.
     public discountFromKitchen(dishId: number) {
         const dishIngredients = this.getIngredientsForFood(dishId);
 
@@ -148,9 +170,15 @@ export class IngredientsService {
             INSERT INTO ingredients (name, amount) VALUES
         `;
 
-        for (const _ of dishIngredients) {
+        const messages: KitchenNotification[] = [];
+
+        for (const ingredient of dishIngredients) {
             const isLast = i++ === dishIngredients.length - 1;
             baseSQL += `(?, ?)${isLast ? ';' : ',\n'}`;
+            messages.push({
+                name: ingredient.ingredient,
+                amount: -ingredient.required_amount
+            });
         }
 
         {
@@ -158,5 +186,19 @@ export class IngredientsService {
             using query = database.prepare(baseSQL);
             query.run(...dishIngredients.flatMap(x => ([x.ingredient, -x.required_amount])));
         }
+
+        console.log("INFO: Sending notifications to kafka about inventory modification", messages);
+
+        const promises = messages.map(x => producer.send({
+            topic: TOPICS.KitchenInventoryNotifications,
+            messages: [{
+                key: `${x.name}:${x.amount}`,
+                value: kitchenNotificationType.toBuffer(x),
+            }],
+        }));
+
+        Promise.all(promises).catch(err => {
+            console.error("INFO: Unable to send events to kafka", err);
+        });
     }
 }

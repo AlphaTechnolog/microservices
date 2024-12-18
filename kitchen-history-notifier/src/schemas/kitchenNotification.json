@@ -1,0 +1,14 @@
+{
+    "type": "record",
+    "name": "kitchenNotification",
+    "fields": [
+        {
+            "name": "name",
+            "type": "string"
+        },
+        {
+            "name": "amount",
+            "type": "int"
+        }
+    ]
+}

@@ -16,6 +16,7 @@ const { orderDish } = useDishes();
 
 const buyItem = () => {
     buying.value = true;
+
     orderDish(dish.id).finally(() => {
         buying.value = false;
         notify({

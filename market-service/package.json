@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "bun run src/index.ts",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "avro:gentypes": "bun run ./.bin/avro-types-generator"
   },
   "devDependencies": {
     "@types/bun": "latest",

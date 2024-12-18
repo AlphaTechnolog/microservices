@@ -1,19 +1,17 @@
-import { Kafka } from "kafkajs";
-import { v4 as uuidv4 } from "uuid";
-import { TOPICS } from "./topics";
+import { Kafka } from 'kafkajs'
+import { v4 as uuidv4 } from 'uuid';
+import { TOPICS } from './topics'
 
-export const clientId = "kitchen-app";
-export const brokers = ["kafka:9092"];
+export const clientId = 'kitchen-app';
+export const brokers = ['kafka:9092'];
 
 export const kafka = new Kafka({
     clientId,
     brokers,
 });
 
-export const producer = kafka.producer({ idempotent: true });
-
-export const kitchenConsumer = kafka.consumer({
-    groupId: "kitchen-app-group-" + uuidv4(),
+export const consumer = kafka.consumer({
+    groupId: `kitchen-app-group-${uuidv4()}`,
 });
 
 /// Creates the required kafka topics if not present already.

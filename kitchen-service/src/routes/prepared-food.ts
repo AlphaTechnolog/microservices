@@ -132,6 +132,7 @@ router.post("/order", async (req: Request, res: Response) => {
 
     await Promise.all(eventsPromises).catch((err) => {
         res.status(500).json({ error: "Unable to send messages", err });
+        throw err;
     });
 
     const NOTIF_ID = "kitchen-notif:with-product";
