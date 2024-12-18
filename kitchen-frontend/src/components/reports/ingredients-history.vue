@@ -18,5 +18,12 @@ const humanize = (text: string): string => text.replace("_", " ");
                 {{ humanize(itemValue) }}
             </th>
         </template>
+        <template #amount="{ itemValue }: { itemValue: number }">
+            <th scope="row" class="px-4 py-4">
+                <span v-if="itemValue > 0">+</span>
+                <span v-else>-</span>
+                {{ String(Math.abs(itemValue)) }}
+            </th>
+        </template>
     </stripped-table>
 </template>
