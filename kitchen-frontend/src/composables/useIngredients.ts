@@ -4,6 +4,7 @@ import { kitchenService } from "../api";
 import type { Ingredient } from "../types";
 
 export const useIngredients = defineStore("ingredients", () => {
+    const ingredients = ref<Ingredient[]>([]);
     const history = ref<Ingredient[]>([]);
     const loading = ref(true);
 
@@ -12,20 +13,30 @@ export const useIngredients = defineStore("ingredients", () => {
         console.error("Unexpected error occurred", err);
     };
 
+    const initialFetches = (): Promise<void> => fetchIngredients().then(() => fetchHistory());
+
+    const fetchIngredients = async (): Promise<void> => {
+        const request = await kitchenService.get<{ ingredients: Ingredient[] }>("/ingredients");
+        ingredients.value = request.data.ingredients;
+    };
+
     const fetchHistory = async (): Promise<void> => {
         const request = await kitchenService.get<{ ingredients: Ingredient[] }>("/ingredients/history");
         history.value = request.data.ingredients;
     };
 
     onMounted(() => {
-        fetchHistory()
+        initialFetches()
             .catch(handleError)
             .finally(() => (loading.value = false));
     });
 
     return {
+        ingredients,
         history,
         loading,
+        initialFetches,
+        fetchIngredients,
         fetchHistory,
     };
 });

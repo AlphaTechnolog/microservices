@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { storeToRefs } from "pinia";
+import { ref } from "vue";
 import { useNotification } from "@kyvg/vue3-notification";
 import { useDishes } from "../../composables/useDishes";
 import type { Dish } from "../../types.d";
@@ -10,13 +10,14 @@ interface Props {
 
 const { dish } = defineProps<Props>();
 const { notify } = useNotification();
+const buying = ref(false);
 
-const dishesStore = useDishes();
-const { orderDish } = dishesStore;
-const { buying } = storeToRefs(dishesStore);
+const { orderDish } = useDishes();
 
 const buyItem = () => {
+    buying.value = true;
     orderDish(dish.id).finally(() => {
+        buying.value = false;
         notify({
             text: `Bought ${dish.name} successfully`,
         });
@@ -32,12 +33,16 @@ const buyItem = () => {
             alt="banner"
         />
 
-        <div class="p-4 w-full space-y-4">
-            <h2 class="font-semibold text-xl">{{ dish.name }}</h2>
-            <p class="text-slate-800">{{ dish.description }}</p>
-            <button class="buy-button" @click="buyItem" :disabled="buying">
-                {{ buying ? "Loading..." : "Buy now" }}
-            </button>
+        <div class="p-4 w-full h-full flex flex-col justify-start items-start">
+            <div class="w-full space-y-4">
+                <h2 class="font-semibold text-xl">{{ dish.name }}</h2>
+                <p class="text-slate-800">{{ dish.description }}</p>
+            </div>
+            <div class="w-full h-full flex flex-col justify-end">
+                <button class="buy-button" @click="buyItem" :disabled="buying">
+                    {{ buying ? "Loading..." : "Buy now" }}
+                </button>
+            </div>
         </div>
     </section>
 </template>

@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 
-import { RecipeService } from "../services/recipes";
+import { IngredientsService } from "../services/ingredients";
 import { producer, kitchenConsumer } from "../kafka";
 import { TOPICS } from "../topics";
 import { assert, convertToSnakeCase as snakeCase } from "../utils";
@@ -13,15 +13,15 @@ import { boughtProductType, type BoughtProduct } from "../schemas/boughtProduct"
 
 export const router = Router();
 
-const recipeService = new RecipeService();
+const ingredientsService = new IngredientsService();
 const signal = new Signalis();
 
 router.get("/", (_req: Request, res: Response) => {
-    res.status(200).json({ preparedFoods: recipeService.getPreparedFoods() });
+    res.status(200).json({ preparedFoods: ingredientsService.getPreparedFoods() });
 });
 
 router.get("/todays", (_req: Request, res: Response) => {
-    res.status(200).json({ preparedFoods: recipeService.getTodaysPreparedFoods() });
+    res.status(200).json({ preparedFoods: ingredientsService.getTodaysPreparedFoods() });
 });
 
 type SignalisKitchenNotifPayload = {
@@ -99,11 +99,11 @@ router.post("/order", async (req: Request, res: Response) => {
     const { preparedFoodId }: { preparedFoodId: number } = req.body;
     const requestId = uuidv4();
 
-    const missingProducts = recipeService.preparedFoodMissingProducts(preparedFoodId);
+    const missingProducts = ingredientsService.preparedFoodMissingProducts(preparedFoodId);
 
     if (missingProducts.length === 0) {
-        const dish = recipeService.getPreparedFood(preparedFoodId);
-        recipeService.discountFromKitchen(preparedFoodId);
+        const dish = ingredientsService.getPreparedFood(preparedFoodId);
+        ingredientsService.discountFromKitchen(preparedFoodId);
         res.status(200).json({ preparedFood: dish });
         return;
     }
@@ -142,7 +142,7 @@ router.post("/order", async (req: Request, res: Response) => {
 
     for (const event of eventsToProcess) {
         const { dishKey, product } = event;
-        const dish = recipeService.getPreparedFoodFromKey(dishKey);
+        const dish = ingredientsService.getPreparedFoodFromKey(dishKey);
 
         console.log({ event });
 
@@ -154,12 +154,12 @@ router.post("/order", async (req: Request, res: Response) => {
             throw new Error("Invalid dishKey: " + String(dishKey));
         }
 
-        recipeService.addIngredientToKitchen(product);
+        ingredientsService.addIngredientToKitchen(product);
     }
 
-    recipeService.discountFromKitchen(preparedFoodId);
+    ingredientsService.discountFromKitchen(preparedFoodId);
 
     res.status(200).json({
-        preparedFood: recipeService.getPreparedFood(preparedFoodId),
+        preparedFood: ingredientsService.getPreparedFood(preparedFoodId),
     });
 });

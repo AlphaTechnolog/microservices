@@ -5,18 +5,18 @@ import type {
     Ingredient,
     PreparedFood,
     PreparedFoodIngredient,
-} from "./types.d";
+} from "./types";
 
 type MissingProducts4Dish = MissingProductType[];
 
-export class RecipeService {
+export class IngredientsService {
     private static openConnection() {
         return new Database("./database.sqlite");
     }
 
     public getPreparedFoods() {
         {
-            using database = RecipeService.openConnection();
+            using database = IngredientsService.openConnection();
             using query = database.query("SELECT * FROM prepared_foods");
             return query.all() as PreparedFood[];
         }
@@ -25,16 +25,17 @@ export class RecipeService {
     public getTodaysPreparedFoods() {
         const sql = "SELECT * FROM prepared_foods ORDER BY RANDOM() LIMIT 7";
         {
-            using database = RecipeService.openConnection();
+            using database = IngredientsService.openConnection();
             using query = database.query(sql);
             return query.all() as PreparedFood[];
         }
     }
 
-    private getAvailableIngredients() {
+    public getAvailableIngredients() {
+        const sql = "SELECT name, SUM(amount) AS amount FROM ingredients GROUP BY name ORDER BY amount DESC";
         {
-            using database = RecipeService.openConnection();
-            using query = database.query("SELECT name, SUM(amount) AS amount FROM ingredients GROUP BY name;");
+            using database = IngredientsService.openConnection();
+            using query = database.query(sql);
             return query.all() as Ingredient[];
         }
     }
@@ -42,7 +43,7 @@ export class RecipeService {
     public getIngredientsHistory() {
         const sql = "SELECT * FROM ingredients ORDER BY id DESC";
         {
-            using database = RecipeService.openConnection();
+            using database = IngredientsService.openConnection();
             using query = database.query(sql);
             return query.all() as Ingredient[];
         }
@@ -51,7 +52,7 @@ export class RecipeService {
     public getPreparedFood(id: number) {
         const sql = `SELECT * FROM prepared_foods WHERE id = ? LIMIT 1`;
         {
-            using database = RecipeService.openConnection();
+            using database = IngredientsService.openConnection();
             using query = database.query(sql);
             return query.get(id) as PreparedFood | null;
         }
@@ -60,7 +61,7 @@ export class RecipeService {
     public getPreparedFoodFromKey(key: string) {
         const sql = `SELECT * FROM prepared_foods WHERE key = ? LIMIT 1`;
         {
-            using database = RecipeService.openConnection();
+            using database = IngredientsService.openConnection();
             using query = database.query(sql);
             return query.get(key) as PreparedFood | null;
         }
@@ -80,7 +81,7 @@ export class RecipeService {
         `;
 
         {
-            using database = RecipeService.openConnection();
+            using database = IngredientsService.openConnection();
             using query = database.query(sql);
             return query.all(preparedFoodId) as PreparedFoodIngredient[];
         }
@@ -132,7 +133,7 @@ export class RecipeService {
     public addIngredientToKitchen(ingredient: Ingredient) {
         const sql = "INSERT INTO ingredients (name, amount) VALUES (?, ?)";
         {
-            using database = RecipeService.openConnection();
+            using database = IngredientsService.openConnection();
             using query = database.prepare(sql);
             query.run(ingredient.name, ingredient.amount);
         }
@@ -153,7 +154,7 @@ export class RecipeService {
         }
 
         {
-            using database = RecipeService.openConnection();
+            using database = IngredientsService.openConnection();
             using query = database.prepare(baseSQL);
             query.run(...dishIngredients.flatMap(x => ([x.ingredient, -x.required_amount])));
         }
