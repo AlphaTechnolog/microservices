@@ -7,6 +7,7 @@ import type { Dish } from "../types.d";
 export const useDishes = defineStore("dishes", () => {
     const dishes = ref<Dish[]>([]);
     const loading = ref(true);
+    const buying = ref(false);
 
     // TODO: Use toasts.
     const handleError = <X extends Error>(err: X) => {
@@ -16,6 +17,15 @@ export const useDishes = defineStore("dishes", () => {
     const fetchDishes = async (): Promise<void> => {
         const request = await kitchenService.get<{ preparedFoods: Dish[] }>("/prepared-food/todays");
         dishes.value = request.data.preparedFoods;
+    };
+
+    const orderDish = async (id: number): Promise<void> => {
+        buying.value = true;
+
+        kitchenService
+            .post<{ preparedFood: Dish }>("/prepared-food/order", { preparedFoodId: id })
+            .catch(handleError)
+            .finally(() => (buying.value = false));
     };
 
     onMounted(() => {
@@ -29,6 +39,8 @@ export const useDishes = defineStore("dishes", () => {
     return {
         dishes,
         loading,
+        buying,
         fetchDishes,
+        orderDish,
     };
 });
