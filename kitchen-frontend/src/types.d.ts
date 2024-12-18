@@ -5,3 +5,8 @@ export interface Dish {
     key: string;
     image_url: string;
 }
+
+export interface Ingredient {
+    name: string;
+    amount: number;
+}

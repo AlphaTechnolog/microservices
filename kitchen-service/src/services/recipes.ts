@@ -39,6 +39,15 @@ export class RecipeService {
         }
     }
 
+    public getIngredientsHistory() {
+        const sql = "SELECT * FROM ingredients ORDER BY id DESC";
+        {
+            using database = RecipeService.openConnection();
+            using query = database.query(sql);
+            return query.all() as Ingredient[];
+        }
+    }
+
     public getPreparedFood(id: number) {
         const sql = `SELECT * FROM prepared_foods WHERE id = ? LIMIT 1`;
         {
