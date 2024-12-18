@@ -7,7 +7,9 @@ CREATE TABLE IF NOT EXISTS ingredients (
 CREATE TABLE IF NOT EXISTS prepared_foods (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     key TEXT NOT NULL,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    image_url TEXT NOT NULL,
+    description TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS prepared_food_ingredients (

@@ -1,10 +1,9 @@
 import express from "express";
+import cors from "cors";
+
+import { kitchenConsumer as consumer, producer, createKafkaTopics } from "./kafka";
+
 import { TOPICS } from "./topics";
-import {
-    kitchenConsumer as consumer,
-    producer,
-    createKafkaTopics,
-} from "./kafka";
 
 await createKafkaTopics()
     .then(() => producer.connect())
@@ -17,6 +16,7 @@ await consumer.subscribe({
 
 const app = express();
 
+app.use(cors({}));
 app.use(express.json({}));
 
 // importing routes this way so if they setup a new listener for events, they will get
