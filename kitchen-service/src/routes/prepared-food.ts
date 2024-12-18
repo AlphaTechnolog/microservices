@@ -20,6 +20,10 @@ router.get("/", (_req: Request, res: Response) => {
     res.status(200).json({ preparedFoods: recipeService.getPreparedFoods() });
 });
 
+router.get("/todays", (_req: Request, res: Response) => {
+    res.status(200).json({ preparedFoods: recipeService.getTodaysPreparedFoods() });
+});
+
 type SignalisKitchenNotifPayload = {
     requestId: string;
     product: BoughtProduct;

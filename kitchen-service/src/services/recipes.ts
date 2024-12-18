@@ -22,6 +22,15 @@ export class RecipeService {
         }
     }
 
+    public getTodaysPreparedFoods() {
+        const sql = "SELECT * FROM prepared_foods ORDER BY RANDOM() LIMIT 7";
+        {
+            using database = RecipeService.openConnection();
+            using query = database.query(sql);
+            return query.all() as PreparedFood[];
+        }
+    }
+
     private getAvailableIngredients() {
         {
             using database = RecipeService.openConnection();
