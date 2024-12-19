@@ -25,6 +25,10 @@ export const useIngredients = defineStore("ingredients", () => {
         history.value = request.data.ingredients;
     };
 
+    const appendToHistory = (ingredient: Ingredient) => {
+        history.value.unshift(ingredient);
+    }
+
     onMounted(() => {
         initialFetches()
             .catch(handleError)
@@ -38,5 +42,6 @@ export const useIngredients = defineStore("ingredients", () => {
         initialFetches,
         fetchIngredients,
         fetchHistory,
+        appendToHistory,
     };
 });

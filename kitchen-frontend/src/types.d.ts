@@ -7,6 +7,12 @@ export interface Dish {
 }
 
 export interface Ingredient {
+    id: number;
     name: string;
     amount: number;
+}
+
+export interface KitchenInventoryNotification {
+    key: string;
+    body: Omit<Ingredient, 'id'>;
 }

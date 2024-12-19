@@ -41,18 +41,22 @@ await consumer.run({
             return;
         }
 
-        const body = kitchenNotificationType.fromBuffer(value);
+        const body = kitchenNotificationType.fromBuffer(value) as KitchenNotification;
         const ongoingEvent = { key: key.toString(), body };
 
-        console.log("INFO: Redirecting this event to all connected websockets", ongoingEvent);
+        const { clients } = websocketServer;
+
+        console.log(`INFO: Redirecting this event to all connected websockets (${clients.size})`, ongoingEvent);
 
         // Redirect this kafka event to all the connected websockets.
-        websocketServer.clients.forEach((socket: WebSocket) => {
-            socket.send(JSON.stringify(ongoingEvent));
+        clients.forEach((socket: WebSocket) => {
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify(ongoingEvent));
+            }
         });
     },
 });
 
-app.listen(5000, () => {
+server.listen(5000, () => {
     console.log("Server is listening at port 5000");
 });
