@@ -11,8 +11,8 @@ INSERT INTO ingredients (name, amount) VALUES
 
 INSERT INTO prepared_foods (key, name, description, image_url) VALUES
 ('ensalada_cesar', 'Ensalada Cesar', 'Ensalada de lechuga romana y croûtons (trozos de pan tostado) con jugo de limón, aceite de oliva, huevo, etc', 'https://imag.bonviveur.com/ensalada-cesar-casera.jpg'),
-('pasta_con_carne_molida', 'Pasta con carne molida', 'Es una pasta hecha a base de pasta (XD) y carne molida (XDXDXDXD)', 'https://cdn0.recetasgratis.net/es/posts/3/2/6/espagueti_con_carne_molida_51623_orig.jpg'),
-('pan_simple', 'Pan simple', 'Un pan hecho con queso, salsa, jamón, y ya xd', 'https://www.panaderiabistro702.mx/cdn/shop/collections/IMG_0249_1024x1024.jpg?v=1729727900');
+('pasta_con_carne_molida', 'Pasta con carne molida', 'Lorem ipsum sit amet consectetur asdjkasjdkasd', 'https://cdn0.recetasgratis.net/es/posts/3/2/6/espagueti_con_carne_molida_51623_orig.jpg'),
+('pan_simple', 'Pan simple', 'Lorem ipsum sit amet consectetur asdjkasjdkasd', 'https://www.panaderiabistro702.mx/cdn/shop/collections/IMG_0249_1024x1024.jpg?v=1729727900');
 
 INSERT INTO prepared_food_ingredients (id_prepared_food, id_ingredient, required_amount) VALUES
 (1, 1, 5),  -- 5 de lechuga para la ensalada cesar
