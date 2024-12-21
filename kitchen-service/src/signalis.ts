@@ -1,10 +1,8 @@
 export class Signalis {
-    constructor(
-        private signals: {
-            callback: (...args: any[]) => void;
-            key: string;
-        }[] = []
-    ) {}
+    private signals: {
+        callback: (...args: any[]) => void;
+        key: string;
+    }[] = [];
 
     public connect<V>(signal: string, callback: (...args: V[]) => void) {
         this.signals.push({
@@ -19,14 +17,22 @@ export class Signalis {
         });
     }
 
-    // TODO: Better way to remove a handler.
+    // Improved emit method with handler removal
     public emit<V>(signal: string, ...args: V[]) {
-        for (let i = 0; i < this.signals.length; ++i) {
-            const handler = this.signals[i];
+        this.signals = this.signals.filter(handler => {
             const { key, callback } = handler;
-            if (key !== signal) continue;
-            callback(...args);
-            this.signals[i].callback = () => {};
-        }
+            if (key === signal) {
+                callback(...args);
+                return false; // Remove the handler after calling it
+            }
+            return true;
+        });
+    }
+
+    // New method to disconnect a specific handler
+    public disconnect<V>(signal: string, callback: (...args: V[]) => void) {
+        this.signals = this.signals.filter(handler => {
+            return handler.key !== signal || handler.callback !== callback;
+        });
     }
 }

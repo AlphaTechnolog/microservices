@@ -25,5 +25,10 @@
         "npm.packageManager": "bun",
         "prettier.tabWidth": 4,
         "prettier.printWidth": 120
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-azuretools.vscode-docker"
+        ]
     }
 }
