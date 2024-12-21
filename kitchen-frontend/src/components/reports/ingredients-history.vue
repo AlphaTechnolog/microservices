@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import { useIngredients } from "../../composables/useIngredients";
-import { ref, onMounted, onUnmounted } from "vue";
 
 import StrippedTable from "../../components/stripped-table.vue";
-import type { KitchenInventoryNotification } from "../../types.d";
+import { useHistoryNotifications } from "../../composables/useHistoryNotifications";
 
 const ingredientsStore = useIngredients();
 const { loading, history } = storeToRefs(ingredientsStore);
@@ -12,31 +11,8 @@ const { appendToHistory } = ingredientsStore;
 
 const headers = ["#", "Ingredient", "Amount"];
 
-let socket: WebSocket = new WebSocket("ws://localhost:5000");
-
-const isOpenedSocket = ref<boolean>(false);
-
-onMounted(() => {
-    isOpenedSocket.value = true;
-});
-
-socket.onmessage = (e) => {
-    const notification = JSON.parse(e.data) as KitchenInventoryNotification;
-    const { body: ingredient } = notification;
-    const payload = {
-        id: history.value[0].id + 1,
-        ...ingredient,
-    };
-    console.log({ payload});
-    appendToHistory(payload);
-}
-
-onUnmounted(() => {
-    if (socket.readyState === WebSocket.OPEN) {
-        socket.close();
-        isOpenedSocket.value = false;
-    }
-})
+// we'll just append to the history this movement when the socket tells us to do so
+const { isOpenedSocket } = useHistoryNotifications(appendToHistory);
 </script>
 
 <template>

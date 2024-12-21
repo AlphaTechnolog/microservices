@@ -29,6 +29,20 @@ export const useIngredients = defineStore("ingredients", () => {
         history.value.unshift(ingredient);
     }
 
+    const replaceIngredient = (newVersion: Ingredient): void => {
+        if (ingredients.value.length === 0) {
+            return;
+        }
+
+        ingredients.value = ingredients.value.map((oldIngredient: Ingredient) => {
+            if (oldIngredient.name !== newVersion.name) {
+                return oldIngredient;
+            }
+
+            return newVersion;
+        });
+    }
+
     onMounted(() => {
         initialFetches()
             .catch(handleError)
@@ -43,5 +57,6 @@ export const useIngredients = defineStore("ingredients", () => {
         fetchIngredients,
         fetchHistory,
         appendToHistory,
+        replaceIngredient,
     };
 });
