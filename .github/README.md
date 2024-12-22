@@ -60,6 +60,89 @@ on the seeder of the `kitchen-service` application [seeds](../kitchen-service/da
 3. These events with topic `kitchen-inventory-notifications` are produced by the database service of the `kitchen-service` when one attempts to modify the `ingredients` table so yeah, it will keep always up to date.
 4. The ingredients table is quite special though because instead of adding those messages (which comes with the structure like: `{"name": "product x", "amount": -5}`), it will have to look for that product on its table and then substract or add the `"amount"` it needs to, this will allow us to update that table without ever needing to ask again to the database and forcing it more, which is better for the database and the app in general
 
+## How do i run this in my local computer??
+
+Well follow the next steps, assuming you're running some unix-like os.
+
+1. Clone the project in your local machine.
+
+```sh
+git clone https://github.com/AlphaTechnolog/microservices.git $HOME/microservices && cd ~/microservices
+```
+
+2. Install all the dependencies
+
+Required dependencies are:
+
+- `bun`
+- `sqlite3`
+- `docker`
+
+> Example
+
+```sh
+# Install bun
+curl -fsSL https://bun.sh/install | bash
+
+# Install dependencies with apt
+sudo apt install sqlite3 docker{,-compose}
+sudo systemctl enable --now docker
+```
+
+3. Run docker image of kafka with docker compose
+
+```sh
+cd ~/microservices/
+docker compose up -d
+```
+
+4. Configure market-service
+
+```sh
+cd market-service
+bun install && bun run dev
+```
+
+5. Configure the kitchen-frontend app
+
+```sh
+cd kitchen-frontend
+bun install && bun run dev
+```
+
+6. Configure kitchen-service
+
+```sh
+cd kitchen-service
+./.bin/clean-database.sh
+bun install
+bun run dev
+```
+
+7. Configure warehouse service
+
+```sh
+cd warehouse-service
+./.bin/clean-database.sh
+bun install
+bun run dev
+```
+
+8. Configure kitchen-history-modifier service
+
+```sh
+cd kitchen-history-modifier
+bun install && bun run dev
+```
+
+> Pretty much all the same for every micro :joy:
+
+9. Then you should be able to go to the frontend on your browser
+
+```sh
+open http://localhost:5173/
+```
+
 ## Conclusion
 
 This project really served me to learn about all these things and was interesting to build, so i hope this serves someone to learn about these technologies about their usage by using this repository as example code, that would be great... if you think so aswell, consider leaving a star which would help the repository appear to more people aswell
@@ -71,3 +154,4 @@ This project really served me to learn about all these things and was interestin
 - [ ] Improve project structure
 - [ ] Better error handling on frontend
 - [ ] Implement timestamps on database schema
+- [ ] Dockerize every microservice
