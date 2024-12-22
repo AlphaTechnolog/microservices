@@ -1,4 +1,4 @@
-# Kitchen app (microservices example)
+# Microservices
 
 This is an example application i made in order to learn about microservices and backend infrastructure.
 
