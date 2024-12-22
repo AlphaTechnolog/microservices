@@ -63,3 +63,11 @@ on the seeder of the `kitchen-service` application [seeds](../kitchen-service/da
 ## Conclusion
 
 This project really served me to learn about all these things and was interesting to build, so i hope this serves someone to learn about these technologies about their usage by using this repository as example code, that would be great... if you think so aswell, consider leaving a star which would help the repository appear to more people aswell
+
+## TODO
+
+- [ ] Improve code quality by using `.env`
+- [ ] Deploy application somewhere (?)
+- [ ] Improve project structure
+- [ ] Better error handling on frontend
+- [ ] Implement timestamps on database schema
