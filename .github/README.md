@@ -4,7 +4,7 @@ This is an example application i made in order to learn about microservices and 
 
 ![demonstration.png](./assets/demonstration.png)
 
-> ![NOTE]
+> [!NOTE]
 > This application aims to serve as a demonstration repository about all the concepts am about to break down below, so you can use this as a repository to see some examples about the usage of some the technologies i used here, but keep in mind that here a lot of things can also be improved, like project structure, etc.
 
 ## Technologies
