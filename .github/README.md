@@ -25,7 +25,11 @@ The idea was to make some application which would teach myself how could i be co
 microservices and keep data synchronized across all the services i share, so i can have two applications consuming
 different topics on the kafka event pool, but they should have synchronized data (this was harder than it seemed at the start though)
 
-Ok well i could tryna make some kind of diagram and i tried but it sucks so yeah here's the explanation about what this thing does lmao
+Here's a little chart about the core process
+
+![flow-chart.png](./assets/flow-chart.png)
+
+Below is a technical explanation about the application.
 
 ### Database structure
 
