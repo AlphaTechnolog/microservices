@@ -15,7 +15,7 @@ This app uses several technologies in order to work:
 - **kafka**: communicate between services by sending messages and keeping them in storage for next run
 - **websockets**: in order to subscribe certain parts of the frontend to backend state
 - **express**: create simple http servers with routes
-- **bun**: man, this bun makes so easy to configure a new typescript project and gives you cool apis (love the sqlite one)
+- **bun**: man, bun makes it really easy to configure a new typescript project and gives you cool apis (love the sqlite one)
 - **sqlite**: databases lmao
 - **maybe im missing something**: ;-;
 
